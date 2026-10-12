@@ -15,6 +15,10 @@ from app.sections import analytics, assessment, explainability, overview
 from app.theme import brand, inject_styles
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DATASET_PATH = Path(os.getenv("LOAN_DATASET_PATH", ROOT / "data/raw/credit_risk_dataset.csv"))
 REPORTS_PATH = Path(os.getenv("LOAN_REPORTS_DIR", ROOT / "reports"))
 API_URL = os.getenv("LOAN_API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
