@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+import json
 from pathlib import Path
 from typing import Any
 
@@ -24,14 +25,25 @@ REPORTS_PATH = Path(os.getenv("LOAN_REPORTS_DIR", ROOT / "reports"))
 API_URL = os.getenv("LOAN_API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 
 
+
 @st.cache_data(show_spinner=False)
 def _dataset_summary(path: str, modified_at: float | None) -> dict[str, Any] | None:
-    del modified_at  # cache key changes when the underlying file timestamp changes
+    del modified_at
     try:
-        frame = pd.read_csv(path)
-        return summarize_dataset(frame)
-    except (OSError, pd.errors.ParserError, UnicodeDecodeError, ValueError):
+        csv_path = Path(path)
+        if csv_path.is_file():
+            return summarize_dataset(pd.read_csv(csv_path))
+
+        summary_path = Path(__file__).resolve().parents[1] / "reports" / "dataset_summary.json"
+        if summary_path.is_file():
+            with summary_path.open("r", encoding="utf-8") as file:
+                summary = json.load(file)
+            return summary if isinstance(summary, dict) else None
+
         return None
+    except (OSError, pd.errors.ParserError, UnicodeDecodeError, ValueError, json.JSONDecodeError):
+        return None
+
 
 
 @st.cache_data(show_spinner=False)
