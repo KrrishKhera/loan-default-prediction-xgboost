@@ -34,8 +34,13 @@ def render(
     card_columns = st.columns(4, gap="medium")
     if dataset_summary:
         total = dataset_summary["rows"]
-        defaults = dataset_summary["target_counts"].get(1, 0)
-        default_rate = dataset_summary["target_percentages"].get(1, 0.0)
+        target_counts = dataset_summary.get("target_counts", {})
+        target_percentages = dataset_summary.get("target_percentages", {})
+
+        # JSON object keys are strings, while summarize_dataset() may return integer keys.
+        defaults = target_counts.get(1, target_counts.get("1", 0))
+        default_rate = target_percentages.get(1, target_percentages.get("1", 0.0))
+
         with card_columns[0]:
             metric_card("Source rows", f"{total:,}", "Credit risk dataset")
         with card_columns[1]:
