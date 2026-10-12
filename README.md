@@ -20,7 +20,7 @@ The expected target is `loan_status` (`0` = non-default, `1` = default). The loa
 
 ### Fresh-clone data and model requirements
 
-The raw CSV and fitted model are intentionally excluded from Git. Download the CSV from the Kaggle page above and place it at `data/raw/credit_risk_dataset.csv`. The tracked aggregate reports and global SHAP summary support the analytics and explainability views, but dataset-derived Overview statistics and API predictions require the local CSV and model. The API can start without them, but `/health` reports unavailable readiness and `/predict` returns an unavailable response until a compatible model is configured. Individual `/explain` requests also need the CSV as background data.
+The raw CSV and fitted model are intentionally excluded from Git. Download the CSV from the Kaggle page above and place it at `data/raw/credit_risk_dataset.csv`. The tracked aggregate reports and global SHAP summary support the analytics and explainability views, but dataset-derived Overview statistics require the local CSV. The API can start without a model, but `/health` reports unavailable readiness and `/predict` returns an unavailable response until a compatible model is configured. Local individual `/explain` requests can use the full CSV; a deployment can instead provide the deterministic 80-row feature-only SHAP background described in [docs/deployment.md](docs/deployment.md).
 
 To create a local model artifact from the downloaded CSV, use a separate ignored output directory:
 
@@ -96,7 +96,7 @@ MPLCONFIGDIR=.venv/.cache/matplotlib PYTHONPATH=src:. \
   .venv/bin/python -m uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for interactive requests. `GET /health` reports model and explanation readiness, `POST /predict` returns the default probability and threshold-based risk label, and `POST /explain` adds individual SHAP attributions. The saved model path defaults to `models/selected_model.joblib`; the local SHAP background data defaults to `data/raw/credit_risk_dataset.csv`. Override them with `LOAN_MODEL_PATH` and `LOAN_BACKGROUND_PATH` when needed. Prediction can remain available without the CSV, but `/explain` will report unavailable until compatible background data is configured. Risk labels reflect the existing validation-selected threshold and are not calibrated risk bands. SHAP contributions describe the model output and are not causal explanations.
+Open `http://127.0.0.1:8000/docs` for interactive requests. `GET /health` reports model and explanation readiness, `POST /predict` returns the default probability and threshold-based risk label, and `POST /explain` adds individual SHAP attributions. The saved model path defaults to `models/selected_model.joblib`; the local SHAP background data defaults to `data/raw/credit_risk_dataset.csv`. Override them with `LOAN_MODEL_PATH` and `LOAN_BACKGROUND_PATH` when needed. The background can be either the complete validated source CSV or an 80-row CSV containing exactly the 11 model features and no target column. Prediction can remain available without background data, but `/explain` will report unavailable until compatible background data is configured. Risk labels reflect the existing validation-selected threshold and are not calibrated risk bands. SHAP contributions describe the model output and are not causal explanations.
 
 Run API tests with:
 
@@ -144,3 +144,7 @@ This policy depends on confirming data provenance and timestamps. If the actual 
 ## Project status and evaluation caveat
 
 The application and local setup instructions are implemented. Deployment and an independent final holdout evaluation remain future work. Do not present the existing test metrics as a pristine final evaluation or the model as suitable for real lending decisions.
+
+## Cloud deployment preparation
+
+The project contains a minimal `pyproject.toml` for installing `src/loan_default`, and dependency pins for the Python and core model-library versions recorded in the training metadata. Use Python 3.13 on both deployment platforms; Render reads `.python-version`, while Streamlit Community Cloud requires selecting Python 3.13 in the app's Advanced settings. Deployment setup, Render start command, private model/background-file handling, and Streamlit Secrets configuration are documented in [docs/deployment.md](docs/deployment.md).

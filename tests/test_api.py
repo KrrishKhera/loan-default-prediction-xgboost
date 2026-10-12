@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pandas as pd
 from fastapi.testclient import TestClient
 
 from api.app import create_app
@@ -84,6 +85,24 @@ def test_explanation_response_uses_complete_raw_feature_schema():
             item["shap_value_probability"] for item in body["feature_attributions"]
         )
         assert abs(reconstructed - body["default_probability"]) < 2e-4
+
+
+def test_feature_only_80_row_shap_background_is_supported(tmp_path):
+    rows = []
+    for index in range(80):
+        borrower = valid_borrower()
+        borrower["person_age"] = float(24 + index % 35)
+        borrower["person_income"] = float(30000 + index * 1000)
+        borrower["loan_amnt"] = float(5000 + index * 100)
+        rows.append(borrower)
+    background_path = tmp_path / "feature_background.csv"
+    pd.DataFrame(rows, columns=FEATURES).to_csv(background_path, index=False)
+
+    with TestClient(create_app(MODEL, background_path)) as client:
+        assert client.get("/health").json()["explanation_ready"] is True
+        response = client.post("/explain", json=valid_borrower())
+        assert response.status_code == 200, response.text
+        assert len(response.json()["feature_attributions"]) == len(FEATURES)
 
 
 def test_missing_model_artifact_returns_safe_unavailable_response(tmp_path):

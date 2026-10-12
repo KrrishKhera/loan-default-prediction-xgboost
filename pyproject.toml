@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loan-default-prediction"
+version = "0.1.0"
+description = "Loan default prediction application and reusable ML package"
+requires-python = ">=3.13,<3.14"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["loan_default*"]

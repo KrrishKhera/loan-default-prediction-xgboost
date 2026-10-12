@@ -13,11 +13,12 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from loan_default.data import FEATURES, load_data, split_data
+from loan_default.data import FEATURES, TARGET, split_data, validate_data
 from loan_default.explain import (
     build_shap_explainer,
     explain_instances,
     validate_artifact_schema,
+    validate_raw_features,
 )
 from api.schemas import (
     BorrowerInput,
@@ -57,12 +58,22 @@ def _build_app(model_path: Path, background_path: Path) -> FastAPI:
 
         if app.state.artifact is not None:
             try:
-                frame = load_data(background_path)
-                training_rows = split_data(frame, random_state=42)["X_train"]
-                assert isinstance(training_rows, pd.DataFrame)
-                background = training_rows.sample(
-                    n=min(80, len(training_rows)), random_state=42
-                )
+                if not background_path.is_file():
+                    raise FileNotFoundError(f"SHAP background not found: {background_path}")
+                frame = pd.read_csv(background_path)
+                if TARGET in frame.columns:
+                    validate_data(frame)
+                    training_rows = split_data(frame, random_state=42)["X_train"]
+                    assert isinstance(training_rows, pd.DataFrame)
+                    background = training_rows.sample(
+                        n=min(80, len(training_rows)), random_state=42
+                    )
+                else:
+                    background = validate_raw_features(frame)
+                    if len(background) != 80:
+                        raise ValueError(
+                            "Feature-only SHAP background must contain exactly 80 rows"
+                        )
                 app.state.explainer = build_shap_explainer(
                     app.state.artifact, background
                 )

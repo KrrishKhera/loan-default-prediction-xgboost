@@ -25,6 +25,7 @@ dist/
 *.bak
 local_artifacts/
 artifacts/
+deployment_assets/
 
 # Secrets and local configuration
 .env
