@@ -1,0 +1,30 @@
+{
+  "selected_model": "xgboost",
+  "selection_metric": "validation PR-AUC; hyperparameters tuned by training-only stratified CV PR-AUC",
+  "decision_threshold": 0.4504756033420563,
+  "threshold_objective": "maximum validation F1; ties favor the higher threshold",
+  "test_at_selected_threshold": {
+    "threshold": 0.4504756033420563,
+    "roc_auc": 0.9405147432928811,
+    "pr_auc": 0.8953616112063669,
+    "precision": 0.9613259668508287,
+    "recall": 0.7321178120617111,
+    "f1": 0.8312101910828026,
+    "tn": 5055,
+    "fp": 42,
+    "fn": 382,
+    "tp": 1044
+  },
+  "test_at_default_threshold_0_5": {
+    "threshold": 0.5,
+    "roc_auc": 0.9405147432928811,
+    "pr_auc": 0.8953616112063669,
+    "precision": 0.9726415094339622,
+    "recall": 0.7230014025245441,
+    "f1": 0.829444891391794,
+    "tn": 5068,
+    "fp": 29,
+    "fn": 395,
+    "tp": 1031
+  }
+}

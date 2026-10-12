@@ -1,0 +1,29 @@
+{
+  "status": "exploratory explanation of the existing saved model",
+  "model_name": "xgboost",
+  "decision_threshold": 0.4504756033420563,
+  "feature_schema": [
+    "person_age",
+    "person_income",
+    "person_emp_length",
+    "loan_amnt",
+    "loan_int_rate",
+    "loan_percent_income",
+    "cb_person_cred_hist_length",
+    "person_home_ownership",
+    "loan_intent",
+    "loan_grade",
+    "cb_person_default_on_file"
+  ],
+  "target_excluded_from_features": true,
+  "data_partition": "training rows from deterministic development split only",
+  "random_state": 42,
+  "background_rows": 80,
+  "global_explanation_rows": 300,
+  "individual_examples": 3,
+  "shap_version": "0.53.0",
+  "explainer": "TreeExplainer, interventional, model_output=probability",
+  "mean_absolute_additivity_error": 3.557580223856327e-08,
+  "maximum_absolute_additivity_error": 1.978922380407866e-07,
+  "interpretation": "Attributions describe this fitted model's output relative to its background sample; they are not causal effects."
+}

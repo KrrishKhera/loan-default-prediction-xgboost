@@ -1,0 +1,13 @@
+model,imbalance_strategy,cv_mean_pr_auc,cv_std_pr_auc,cv_rank_within_model,params
+logistic_regression,unweighted,0.7189776934406158,0.00936019808875173,1,"{""classifier__C"": 1.0, ""classifier__class_weight"": null}"
+logistic_regression,unweighted,0.7160791625439837,0.010494532973170793,2,"{""classifier__C"": 0.1, ""classifier__class_weight"": null}"
+logistic_regression,balanced class_weight,0.7112156868174112,0.009830520388752883,3,"{""classifier__C"": 1.0, ""classifier__class_weight"": ""balanced""}"
+logistic_regression,balanced class_weight,0.7097395706447388,0.010183591630768265,4,"{""classifier__C"": 0.1, ""classifier__class_weight"": ""balanced""}"
+random_forest,unweighted,0.8771855867724887,0.004856141790428164,1,"{""classifier__class_weight"": null, ""classifier__max_depth"": null}"
+random_forest,balanced_subsample class_weight,0.8759125408120484,0.004039324750479285,2,"{""classifier__class_weight"": ""balanced_subsample"", ""classifier__max_depth"": null}"
+random_forest,unweighted,0.8739726411007088,0.006555303969777799,3,"{""classifier__class_weight"": null, ""classifier__max_depth"": 12}"
+random_forest,balanced_subsample class_weight,0.8733900773841242,0.007132728574605222,4,"{""classifier__class_weight"": ""balanced_subsample"", ""classifier__max_depth"": 12}"
+xgboost,unweighted scale_pos_weight=1,0.892010943677422,0.004966822153699107,1,"{""classifier__max_depth"": 5, ""classifier__scale_pos_weight"": 1.0}"
+xgboost,weighted scale_pos_weight,0.8903766989389634,0.004799281153693374,2,"{""classifier__max_depth"": 5, ""classifier__scale_pos_weight"": 3.585640544345378}"
+xgboost,unweighted scale_pos_weight=1,0.872192084392367,0.006526131807081892,3,"{""classifier__max_depth"": 3, ""classifier__scale_pos_weight"": 1.0}"
+xgboost,weighted scale_pos_weight,0.867766466353792,0.005432330232613201,4,"{""classifier__max_depth"": 3, ""classifier__scale_pos_weight"": 3.585640544345378}"

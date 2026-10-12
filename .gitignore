@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+.venv/**
+venv/
+pip-wheel-metadata/
+.cache/
+
+# Build, logs, editor swap files, and local regeneration outputs
+build/
+dist/
+*.log
+*.tmp
+*.swp
+*.bak
+local_artifacts/
+artifacts/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+.kaggle/
+kaggle.json
+
+# Local datasets (keep only this guidance file under data/raw)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/final_holdout/*
+!data/final_holdout/README.md
+
+# Trained models and generated artifacts
+models/*
+!models/.gitkeep
+*.joblib
+*.pkl
+*.pickle
+
+# Per-borrower exploratory outputs are unnecessary to share
+reports/exploratory_shap/individual_explanations.csv
+reports/exploratory_shap/individual_explanation_example.png
+
+# Generated output; allow the specifically named final paper if added later
+output/*
+!output/pdf/
+output/pdf/*
+!output/pdf/Loan_Default_Prediction_Partial_Research_Report_Final.pdf
+
+# Notebook and editor noise
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
