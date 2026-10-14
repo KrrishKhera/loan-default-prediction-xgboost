@@ -69,6 +69,8 @@ def inject_styles(appearance: str = "Light") -> None:
         .risk-low {{ color:{'#08664f' if appearance == 'Light' else '#73dfbd'}; }}
         .risk-high {{ color:{'#9c421a' if appearance == 'Light' else '#ffb17b'}; }}
         .risk-detail {{ color:var(--muted);font-size:.86rem; }}
+        [data-testid="stForm"] [data-testid="stFormSubmitButton"] button, .st-key-retry_service_connection [data-testid="stButton"] button {{ color:#FFFFFF !important; }}
+        [data-testid="stForm"] [data-testid="stFormSubmitButton"] button *, .st-key-retry_service_connection [data-testid="stButton"] button * {{ color:#FFFFFF !important; }}
         .st-key-overview_navigation [data-testid="stButton"] button {{ display:flex;align-items:center;justify-content:center;min-height:3.25rem;padding:.72rem 1rem;border:1px solid var(--blue) !important;border-radius:10px;background:var(--blue) !important;color:var(--canvas) !important;font-weight:750;line-height:1.35;text-align:center;white-space:normal;transition:filter .15s ease,box-shadow .15s ease; }}
         .st-key-overview_navigation [data-testid="stButton"] button * {{ color:var(--canvas) !important; }}
         .st-key-overview_navigation [data-testid="stButton"] button:hover {{ filter:brightness(.92); }}

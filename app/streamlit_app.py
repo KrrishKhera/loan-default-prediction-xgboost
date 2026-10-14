@@ -135,7 +135,8 @@ def main() -> None:
         st.selectbox("Appearance", ["Light", "Dark"], key="appearance", help="Changes colors throughout the dashboard.")
         st.divider()
         st.caption("Decision support · model outputs require human review")
-        retry_health = st.button("Retry service connection", key="retry_api_health", use_container_width=True)
+        with st.container(key="retry_service_connection"):
+            retry_health = st.button("Retry service connection", key="retry_api_health", use_container_width=True)
 
     dataset, reports = _load_dashboard_data()
     checked_at = st.session_state.get("_api_health_checked_at")
