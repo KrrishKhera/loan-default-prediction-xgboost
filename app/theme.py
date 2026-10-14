@@ -26,10 +26,10 @@ def inject_styles(appearance: str = "Light") -> None:
         [data-testid="stMainBlockContainer"] {{ width:100%;max-width:1760px;padding:clamp(1.25rem,2.4vw,2.7rem) clamp(1rem,3.2vw,3.5rem) 3.5rem; }}
         [data-testid="stSidebar"] {{ background:var(--surface);border-right:1px solid var(--line); }}
         [data-testid="stSidebarCollapseButton"] {{ box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:0 0 2.5rem;width:2.5rem;min-width:2.5rem;height:2.5rem;margin-left:auto;overflow:visible;border-radius:10px;visibility:visible !important; }}
-        [data-testid="stSidebarCollapseButton"] button {{ box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-width:100%;height:100%;padding:0;border:1px solid transparent;border-radius:inherit;background:transparent;color:var(--blue); }}
-        [data-testid="stSidebarCollapseButton"] button:hover {{ background:var(--panel);border-color:var(--blue);color:var(--blue); }}
-        [data-testid="stSidebarCollapseButton"] button:focus-visible {{ border-color:var(--blue);outline:3px solid var(--blue);outline-offset:2px; }}
-        [data-testid="stSidebarCollapseButton"] svg {{ display:block;flex:0 0 auto;width:1.25rem;height:1.25rem;color:var(--blue) !important; }}
+        [data-testid="stSidebarCollapseButton"] button, button[data-testid="stExpandSidebarButton"] {{ box-sizing:border-box;background-color:var(--surface) !important;border:1px solid var(--line) !important;border-radius:10px;color:var(--blue) !important;transition:background-color .15s ease,border-color .15s ease,color .15s ease; }}
+        [data-testid="stSidebarCollapseButton"] button:hover, button[data-testid="stExpandSidebarButton"]:hover {{ background-color:var(--panel) !important;border-color:var(--blue) !important;color:var(--blue) !important; }}
+        [data-testid="stSidebarCollapseButton"] button:focus-visible, button[data-testid="stExpandSidebarButton"]:focus-visible {{ border-color:var(--blue) !important;outline:3px solid var(--blue) !important;outline-offset:2px; }}
+        [data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"], button[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {{ color:var(--blue) !important; }}
         [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li {{ color:var(--ink); }}
         [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .stCaption, .stCaption p {{ color:var(--muted) !important;opacity:1 !important; }}
         [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] span {{ color:var(--ink) !important;opacity:1 !important;font-weight:600; }}
@@ -69,6 +69,10 @@ def inject_styles(appearance: str = "Light") -> None:
         .risk-low {{ color:{'#08664f' if appearance == 'Light' else '#73dfbd'}; }}
         .risk-high {{ color:{'#9c421a' if appearance == 'Light' else '#ffb17b'}; }}
         .risk-detail {{ color:var(--muted);font-size:.86rem; }}
+        .st-key-overview_navigation [data-testid="stButton"] button {{ display:flex;align-items:center;justify-content:center;min-height:3.25rem;padding:.72rem 1rem;border:1px solid var(--blue) !important;border-radius:10px;background:var(--blue) !important;color:var(--canvas) !important;font-weight:750;line-height:1.35;text-align:center;white-space:normal;transition:filter .15s ease,box-shadow .15s ease; }}
+        .st-key-overview_navigation [data-testid="stButton"] button * {{ color:var(--canvas) !important; }}
+        .st-key-overview_navigation [data-testid="stButton"] button:hover {{ filter:brightness(.92); }}
+        .st-key-overview_navigation [data-testid="stButton"] button:focus-visible {{ outline:3px solid var(--blue) !important;outline-offset:3px; }}
         div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{ background:#1e4da8;color:white;border:1px solid #1e4da8;border-radius:10px;font-weight:700;padding:.58rem 1rem;transition:background .15s ease; }}
         div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {{ background:#173d89;border-color:#173d89;color:white; }}
         div.stButton > button:focus, div[data-testid="stFormSubmitButton"] > button:focus {{ outline:3px solid #9eb9f2;outline-offset:2px; }}

@@ -118,15 +118,16 @@ def render(
         ("Review model analytics", "Model analytics"),
         ("Explore explainability", "Explainability"),
     ]
-    nav_cols = st.columns(3, gap="medium")
-    for column, (label, target) in zip(nav_cols, targets):
-        column.button(
-            label,
-            use_container_width=True,
-            key=f"overview_nav_{target}",
-            on_click=_queue_navigation,
-            args=(target,),
-        )
+    with st.container(key="overview_navigation"):
+        nav_cols = st.columns(3, gap="medium")
+        for column, (label, target) in zip(nav_cols, targets):
+            column.button(
+                label,
+                use_container_width=True,
+                key=f"overview_nav_{target}",
+                on_click=_queue_navigation,
+                args=(target,),
+            )
     st.caption("Thresholds and probabilities support model review; they do not replace lending policy, affordability checks, or human oversight.")
 
 
