@@ -9,7 +9,7 @@ import streamlit as st
 from app.api_client import APIClientError, post_prediction
 from app.charts import individual_attribution_chart
 from app.data_service import validate_borrower_payload
-from app.theme import page_heading, risk_result_card
+from app.theme import health_readiness, page_heading, risk_result_card
 
 
 def render(api_url: str, health: dict[str, Any] | None) -> None:
@@ -18,7 +18,7 @@ def render(api_url: str, health: dict[str, Any] | None) -> None:
         "Loan risk assessment",
         "Enter the loan terms and borrower profile available at origination to estimate default probability.",
         eyebrow="BORROWER DECISION SUPPORT",
-        service_ready=bool(health and health.get("model_loaded")),
+        service_ready=health_readiness(health),
     )
     st.markdown(
         '<div class="callout">The model uses the 11 fields below. Its output is an estimate for review, not an approved lending decision or a guarantee of actual repayment.</div>',
@@ -72,14 +72,17 @@ def render(api_url: str, health: dict[str, Any] | None) -> None:
         with explain_button:
             explain = st.form_submit_button("Assess + explain this case", width="stretch")
 
-    explanation_error: str | None = None
+    explanation_error: str | None = st.session_state.get("explanation_retry_pending")
     if assess or explain:
         st.session_state.pop("last_explanation", None)
+        st.session_state.pop("explanation_retry_pending", None)
+        explanation_error = None
         try:
             ordered_payload = validate_borrower_payload(payload)
         except ValueError:
             st.error("The borrower form is incomplete. Review the inputs and try again.")
             return
+        st.session_state["last_borrower_payload"] = ordered_payload
         try:
             with st.spinner("Scoring this borrower with the saved model…"):
                 prediction = post_prediction(api_url, "/predict", ordered_payload)
@@ -87,12 +90,15 @@ def render(api_url: str, health: dict[str, Any] | None) -> None:
             if explain:
                 with st.spinner("Preparing a model attribution for this case…"):
                     try:
-                        explanation = post_prediction(api_url, "/explain", ordered_payload, timeout=30.0)
+                        explanation = post_prediction(
+                            api_url, "/explain", ordered_payload, timeout=(2.0, 30.0)
+                        )
                         st.session_state["last_explanation"] = explanation
                     except APIClientError:
                         explanation_error = "The probability is ready, but this case's explanation is temporarily unavailable."
+                        st.session_state["explanation_retry_pending"] = explanation_error
         except APIClientError as exc:
-            st.error(str(exc))
+            st.warning(f"{exc} Your form values are still available; retry when the service is ready.")
             return
 
     result = st.session_state.get("last_prediction")
@@ -108,7 +114,22 @@ def render(api_url: str, health: dict[str, Any] | None) -> None:
             st.caption("Current test metrics are preliminary development diagnostics; this interactive estimate does not establish independent model performance.")
         if explanation_error:
             st.warning(explanation_error)
-        elif explain and st.session_state.get("last_explanation"):
+            if st.button("Retry this explanation", key="retry_case_explanation"):
+                try:
+                    with st.spinner("Retrying the case explanation…"):
+                        st.session_state["last_explanation"] = post_prediction(
+                            api_url,
+                            "/explain",
+                            st.session_state["last_borrower_payload"],
+                            timeout=(2.0, 30.0),
+                        )
+                    st.session_state.pop("explanation_retry_pending", None)
+                    explanation_error = None
+                except APIClientError:
+                    explanation_error = "The explanation service is still starting. Please retry shortly."
+                    st.session_state["explanation_retry_pending"] = explanation_error
+                    st.warning(explanation_error)
+        if st.session_state.get("last_explanation"):
             explanation = st.session_state["last_explanation"]
             st.markdown("#### Why the model moved this estimate")
             st.caption("SHAP contributions describe this model's attribution for this case; they do not establish causes.")

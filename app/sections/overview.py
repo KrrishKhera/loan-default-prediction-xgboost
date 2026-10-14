@@ -9,7 +9,7 @@ import streamlit as st
 
 from app.charts import class_distribution_chart, top_feature_chart
 from app.labels import MODEL_LABELS
-from app.theme import metric_card, page_heading, panel_heading
+from app.theme import health_readiness, metric_card, page_heading, panel_heading
 
 
 def render(
@@ -22,7 +22,7 @@ def render(
         "Credit risk intelligence",
         "Lendwise helps explore loan outcomes, model behavior, and borrower risk estimates using the saved XGBoost pipeline.",
         eyebrow="LENDWISE · OVERVIEW",
-        service_ready=bool(health and health.get("model_loaded")),
+        service_ready=health_readiness(health),
     )
     comparison = reports.get("comparison")
     test_report = reports.get("test")

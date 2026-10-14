@@ -48,8 +48,8 @@ def inject_styles(appearance: str = "Light") -> None:
         .topline {{ display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.7rem; }}
         .status-pill {{ display:inline-flex;align-items:center;gap:.45rem;padding:.38rem .72rem;border:1px solid {('#bfdfd8' if appearance == 'Light' else '#32675d')};border-radius:999px;background:{('#effaf6' if appearance == 'Light' else '#173b39')};color:{('#176956' if appearance == 'Light' else '#a7e6d4')};font-size:.75rem;font-weight:700;white-space:nowrap; }}
         .status-dot {{ width:7px;height:7px;border-radius:50%;background:#12a37e; }}
-        .status-pill.offline {{ border-color:{('#ecd8d5' if appearance == 'Light' else '#704948')};background:{('#fff5f3' if appearance == 'Light' else '#482a2b')};color:{('#983e32' if appearance == 'Light' else '#ffc0b8')}; }}
-        .status-pill.offline .status-dot {{ background:#bd4c3d; }}
+        .status-pill.delayed {{ border-color:{('#e7d9bd' if appearance == 'Light' else '#66562f')};background:{('#fffaf0' if appearance == 'Light' else '#41371f')};color:{('#805d1a' if appearance == 'Light' else '#f1d38b')}; }}
+        .status-pill.delayed .status-dot {{ background:#bb8825; }}
         .status-pill:not(.online):not(.offline) {{ border-color:{('#e7d9bd' if appearance == 'Light' else '#66562f')};background:{('#fffaf0' if appearance == 'Light' else '#41371f')};color:{('#805d1a' if appearance == 'Light' else '#f1d38b')}; }}
         .status-pill:not(.online):not(.offline) .status-dot {{ background:#bb8825; }}
         .metric-card {{ height:100%;min-height:128px;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:17px 18px;box-shadow:0 3px 12px var(--shadow); }}
@@ -99,6 +99,13 @@ def brand() -> None:
     )
 
 
+def health_readiness(health: dict[str, Any] | None) -> bool | None:
+    """Translate the API health payload into ready, delayed, or not-yet-checked."""
+    if health is None:
+        return None
+    return health.get("status") == "ok" and health.get("model_loaded") is True
+
+
 def page_heading(
     title: str,
     subtitle: str,
@@ -106,8 +113,14 @@ def page_heading(
     eyebrow: str = "LENDWISE · CREDIT ANALYTICS",
     service_ready: bool | None = None,
 ) -> None:
-    status_text = "API connected" if service_ready else "API unavailable" if service_ready is False else "API status unknown"
-    status_class = "online" if service_ready else "offline" if service_ready is False else "unknown"
+    status_text = (
+        "Prediction service ready"
+        if service_ready is True
+        else "Service starting · retry available"
+        if service_ready is False
+        else "Connecting to prediction service…"
+    )
+    status_class = "online" if service_ready is True else "delayed" if service_ready is False else "unknown"
     st.markdown(
         f'<div class="topline"><div><div class="eyebrow">{escape(eyebrow)}</div><h1>{escape(title)}</h1></div><div class="status-pill {status_class}"><span class="status-dot"></span>{escape(status_text)}</div></div>'
         f'<div class="page-subtitle">{escape(subtitle)}</div>',

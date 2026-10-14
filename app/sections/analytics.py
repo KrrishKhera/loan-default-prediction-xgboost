@@ -14,7 +14,7 @@ from app.charts import (
     validation_ranking_chart,
     validation_threshold_chart,
 )
-from app.theme import page_heading
+from app.theme import health_readiness, page_heading
 
 
 def render(reports: dict[str, Any], health: dict[str, Any] | None) -> None:
@@ -23,7 +23,7 @@ def render(reports: dict[str, Any], health: dict[str, Any] | None) -> None:
         "Model analytics",
         "Compare saved cross-validation and validation results, with historical test diagnostics clearly separated.",
         eyebrow="MODEL PERFORMANCE",
-        service_ready=bool(health and health.get("model_loaded")),
+        service_ready=health_readiness(health),
     )
     comparison = reports.get("comparison")
     if not isinstance(comparison, pd.DataFrame) or comparison.empty:

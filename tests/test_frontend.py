@@ -8,11 +8,11 @@ import pytest
 import requests
 from streamlit.testing.v1 import AppTest
 
-from app.api_client import APIClientError, post_prediction
+from app.api_client import APIClientError, get_health, get_health_with_retry, post_prediction
 from app.charts import confusion_chart, top_feature_chart
 from app.data_service import read_csv_report, read_json_report, summarize_dataset, validate_borrower_payload
 from loan_default.data import CATEGORICAL_FEATURES, FEATURES, NUMERIC_FEATURES, TARGET
-from app.theme import THEMES
+from app.theme import THEMES, health_readiness
 
 
 def sample_dataset() -> pd.DataFrame:
@@ -116,6 +116,64 @@ def test_overview_navigation_buttons_switch_sections_once_and_preserve_theme(app
         assert appearance_widget.value == appearance
 
 
+def test_health_check_accepts_only_the_ready_contract(monkeypatch):
+    ready = {"status": "ok", "model_loaded": True, "explanation_ready": True}
+    response = StubResponse(200, ready)
+    seen = {}
+
+    def get(url, **kwargs):
+        seen.update(url=url, **kwargs)
+        return response
+
+    monkeypatch.setattr(requests, "get", get)
+    assert get_health("https://service.example/", timeout=(1.0, 2.0)) == ready
+    assert seen["url"] == "https://service.example/health"
+    assert seen["timeout"] == (1.0, 2.0)
+
+    monkeypatch.setattr(
+        requests,
+        "get",
+        lambda *args, **kwargs: StubResponse(
+            200, {"status": "degraded", "model_loaded": False, "explanation_ready": False}
+        ),
+    )
+    assert get_health("https://service.example") is None
+
+
+def test_ui_readiness_never_claims_ready_without_successful_health_contract():
+    assert health_readiness(None) is None
+    assert health_readiness({"status": "degraded", "model_loaded": True}) is False
+    assert health_readiness({"status": "ok", "model_loaded": True}) is True
+
+
+@pytest.mark.parametrize("error", [requests.ConnectionError("internal host detail"), requests.Timeout("internal timeout")])
+def test_health_check_handles_connection_failures_and_timeouts(monkeypatch, error):
+    def fail(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(requests, "get", fail)
+    assert get_health("https://service.example", timeout=(0.5, 1.0)) is None
+
+
+def test_health_retry_is_bounded_exhausts_and_recovers_after_a_failure(monkeypatch):
+    ready = {"status": "ok", "model_loaded": True, "explanation_ready": False}
+    attempts = []
+
+    def fail(*args, **kwargs):
+        attempts.append(1)
+        raise requests.ConnectionError("private connection detail")
+
+    monkeypatch.setattr(requests, "get", fail)
+    monkeypatch.setattr("app.api_client.time.sleep", lambda _: None)
+    assert get_health_with_retry("https://service.example", attempts=3) is None
+    assert len(attempts) == 3
+
+    responses = iter([StubResponse(503, {}), StubResponse(200, ready)])
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: next(responses))
+    assert get_health("https://service.example") is None
+    assert get_health("https://service.example") == ready
+
+
 class StubResponse:
     def __init__(self, status_code: int, payload: object):
         self.status_code = status_code
@@ -138,10 +196,19 @@ def test_api_client_returns_json_and_translates_safe_errors(monkeypatch):
     with pytest.raises(APIClientError, match="loan_amnt"):
         post_prediction("http://localhost:8000", "/predict", {})
 
+    monkeypatch.setattr(
+        requests,
+        "post",
+        lambda *args, **kwargs: StubResponse(503, {"detail": "internal startup details"}),
+    )
+    with pytest.raises(APIClientError, match="still starting") as error:
+        post_prediction("http://localhost:8000", "/explain", {})
+    assert "internal" not in str(error.value)
+
     def raise_timeout(*args, **kwargs):
         raise requests.Timeout("sensitive connection internals")
 
     monkeypatch.setattr(requests, "post", raise_timeout)
-    with pytest.raises(APIClientError, match="took too long") as error:
+    with pytest.raises(APIClientError, match="starting or responding slowly") as error:
         post_prediction("http://localhost:8000", "/predict", {})
     assert "sensitive" not in str(error.value)

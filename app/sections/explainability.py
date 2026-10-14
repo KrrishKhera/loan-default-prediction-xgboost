@@ -9,7 +9,7 @@ import streamlit as st
 
 from app.charts import individual_attribution_chart, top_feature_chart
 from app.labels import FEATURE_LABELS
-from app.theme import page_heading
+from app.theme import health_readiness, page_heading
 
 
 def render(reports: dict[str, Any], health: dict[str, Any] | None) -> None:
@@ -18,7 +18,7 @@ def render(reports: dict[str, Any], health: dict[str, Any] | None) -> None:
         "Explainability",
         "Explore how the fitted model uses its inputs, globally and for a submitted borrower profile.",
         eyebrow="MODEL TRANSPARENCY",
-        service_ready=bool(health and health.get("model_loaded")),
+        service_ready=health_readiness(health),
     )
     st.markdown(
         '<div class="callout"><b>Interpretation:</b> SHAP values attribute changes in this model\'s predicted default probability relative to its background sample. They do not show that a factor causes default.</div>',

@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import json
+import time
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.api_client import get_health
+from app.api_client import get_health, get_health_with_retry
 from app.data_service import read_csv_report, read_json_report, summarize_dataset
 from app.sections import analytics, assessment, explainability, overview
 from app.theme import brand, inject_styles
@@ -23,6 +24,7 @@ from app.theme import brand, inject_styles
 DATASET_PATH = Path(os.getenv("LOAN_DATASET_PATH", ROOT / "data/raw/credit_risk_dataset.csv"))
 REPORTS_PATH = Path(os.getenv("LOAN_REPORTS_DIR", ROOT / "reports"))
 API_URL = os.getenv("LOAN_API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+HEALTH_CACHE_SECONDS = 20.0
 
 
 
@@ -133,19 +135,57 @@ def main() -> None:
         st.selectbox("Appearance", ["Light", "Dark"], key="appearance", help="Changes colors throughout the dashboard.")
         st.divider()
         st.caption("Decision support · model outputs require human review")
-        st.caption("Connects to the configured risk API")
+        retry_health = st.button("Retry service connection", key="retry_api_health", use_container_width=True)
 
     dataset, reports = _load_dashboard_data()
-    health = get_health(API_URL)
+    checked_at = st.session_state.get("_api_health_checked_at")
+    connection_state = st.session_state.get("_api_connection_state", "connecting")
+    should_check = checked_at is None or (
+        connection_state == "ready" and time.monotonic() - checked_at >= HEALTH_CACHE_SECONDS
+    )
+    if retry_health:
+        with st.spinner("Waking up the prediction service…"):
+            health = get_health_with_retry(API_URL, attempts=3, timeout=(1.0, 2.0), delay=0.4)
+        st.session_state["_api_health"] = health
+        st.session_state["_api_health_checked_at"] = time.monotonic()
+        st.session_state["_api_connection_state"] = "ready" if health else "delayed"
+    elif should_check:
+        with st.spinner("Connecting to prediction service…"):
+            health = get_health(API_URL, timeout=(1.5, 2.0))
+        st.session_state["_api_health"] = health
+        st.session_state["_api_health_checked_at"] = time.monotonic()
+        st.session_state["_api_connection_state"] = "ready" if health else "delayed"
+    else:
+        health = st.session_state.get("_api_health")
+
+    connection_state = st.session_state.get("_api_connection_state")
+    if connection_state == "ready" and health:
+        with st.sidebar:
+            if health.get("explanation_ready"):
+                st.success("Prediction and explanation service ready")
+            else:
+                st.success("Prediction service ready")
+                st.caption("Individual explanations are temporarily unavailable.")
+    else:
+        # Do not show an alarming red error for a warm-up delay. The rest of
+        # the dashboard is rendered normally with local reports and charts.
+        health = None
+        with st.sidebar:
+            st.info(
+                "The prediction service is taking longer than expected. You can "
+                "continue exploring the dashboard and retry shortly."
+            )
+
+    section_health = health or {"status": "degraded", "model_loaded": False}
 
     if section == "Overview":
-        overview.render(dataset, reports, health)
+        overview.render(dataset, reports, section_health)
     elif section == "Risk assessment":
-        assessment.render(API_URL, health)
+        assessment.render(API_URL, section_health)
     elif section == "Model analytics":
-        analytics.render(reports, health)
+        analytics.render(reports, section_health)
     else:
-        explainability.render(reports, health)
+        explainability.render(reports, section_health)
 
     st.markdown("<hr>", unsafe_allow_html=True)
     st.caption("Lendwise · Loan default prediction · Exploratory portfolio project · Existing test metrics remain preliminary.")
