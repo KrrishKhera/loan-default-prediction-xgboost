@@ -25,7 +25,6 @@ def render(api_url: str, health: dict[str, Any] | None) -> None:
         unsafe_allow_html=True,
     )
     st.caption("The editable values shown in the form are illustrative starting values, not a recommended borrower profile.")
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
     with st.form("borrower_assessment", clear_on_submit=False):
         st.markdown("#### Borrower profile")

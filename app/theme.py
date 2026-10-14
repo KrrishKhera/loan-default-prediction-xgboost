@@ -24,7 +24,12 @@ def inject_styles(appearance: str = "Light") -> None:
         [data-testid="stApp"], [data-testid="stAppViewContainer"], [data-testid="stMain"] {{ background:var(--canvas);color:var(--ink); }}
         [data-testid="stHeader"] {{ background:transparent; }}
         [data-testid="stMainBlockContainer"] {{ width:100%;max-width:1760px;padding:clamp(1.25rem,2.4vw,2.7rem) clamp(1rem,3.2vw,3.5rem) 3.5rem; }}
-        [data-testid="stSidebar"] {{ background:var(--surface);border-right:1px solid var(--line);min-width:250px; }}
+        [data-testid="stSidebar"] {{ background:var(--surface);border-right:1px solid var(--line); }}
+        [data-testid="stSidebarCollapseButton"] {{ box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:0 0 2.5rem;width:2.5rem;min-width:2.5rem;height:2.5rem;margin-left:auto;overflow:visible;border-radius:10px;visibility:visible !important; }}
+        [data-testid="stSidebarCollapseButton"] button {{ box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-width:100%;height:100%;padding:0;border:1px solid transparent;border-radius:inherit;background:transparent;color:var(--blue); }}
+        [data-testid="stSidebarCollapseButton"] button:hover {{ background:var(--panel);border-color:var(--blue);color:var(--blue); }}
+        [data-testid="stSidebarCollapseButton"] button:focus-visible {{ border-color:var(--blue);outline:3px solid var(--blue);outline-offset:2px; }}
+        [data-testid="stSidebarCollapseButton"] svg {{ display:block;flex:0 0 auto;width:1.25rem;height:1.25rem;color:var(--blue) !important; }}
         [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li {{ color:var(--ink); }}
         [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .stCaption, .stCaption p {{ color:var(--muted) !important;opacity:1 !important; }}
         [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] span {{ color:var(--ink) !important;opacity:1 !important;font-weight:600; }}
@@ -84,7 +89,6 @@ def inject_styles(appearance: str = "Light") -> None:
           .topline {{ align-items:flex-start;flex-direction:column; }}
           .metric-card {{ min-height:108px;padding:14px; }}
           .metric-value {{ font-size:1.42rem; }}
-          [data-testid="stSidebar"] {{ min-width:235px; }}
         }}
         </style>
         """,
